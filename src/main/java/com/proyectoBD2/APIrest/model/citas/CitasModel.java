@@ -1,5 +1,6 @@
 package com.proyectoBD2.APIrest.model.citas;
 import java.util.Date;
+import java.util.List;
 
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -22,5 +23,5 @@ public class CitasModel {
     private String motivoVisita;
     private String estado;
     private String observacionesCoordinador;
-    //FALTA INFORMACION
+    private List<citaClienteModel> citaCliente;
 }
