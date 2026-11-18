@@ -14,7 +14,4 @@ import lombok.NoArgsConstructor;
 public class TecnicosAsignadosModel{
     @Id
     private ObjectId usuarioId;
-    private String estado;
-    private String problemaReportado;
-    private String condicionesObservadas;
 }

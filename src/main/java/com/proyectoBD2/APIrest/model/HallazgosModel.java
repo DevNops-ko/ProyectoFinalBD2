@@ -1,6 +1,5 @@
 package com.proyectoBD2.APIrest.model;
 
-import java.util.Date;
 import java.util.List;
 
 import org.bson.types.ObjectId;

@@ -24,6 +24,15 @@ public class OrdenServicioModel {
     private Date fechaRecepcion;
     private Date fechaEstimadaEntrega;
     private List<TecnicosAsignadosModel> tecnicosAsignados;
+    private String estado;
+    private String problemaReportado;
+    private String condicionesObservadas;
     private List<AccesoriosEntregadosModel> accesoriosEntregados;
+    private List<FotografiasModel> fotografias;
+    private List<DiagnosticoModel> diagnósticos;
+    private List<HistorialCambiosModel> historialCambios;
+    private List<ValoracionModel> valoracion;
+    private List<RevisionEntregaModel> revisionesEntrega;
+    private List<EntregaModel> entrega;
     
 }
