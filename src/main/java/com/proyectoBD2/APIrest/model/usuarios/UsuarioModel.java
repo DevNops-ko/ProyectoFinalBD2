@@ -1,4 +1,4 @@
-package com.proyectoBD2.APIrest.model;
+package com.proyectoBD2.APIrest.model.usuarios;
 
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;

@@ -1,6 +1,7 @@
-package com.proyectoBD2.APIrest.model;
+package com.proyectoBD2.APIrest.model.ordenServicio;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,9 +10,6 @@ import lombok.NoArgsConstructor;
 @Data 
 @AllArgsConstructor 
 @NoArgsConstructor
-public class ValoracionModel {
-    private String comentarios;
-    private Integer calificacion;
-    private String sugerencias;
-
+public class RevisionEntregaModel {
+    private List<PuntosVerificadosModel> puntosVerificados;
 }

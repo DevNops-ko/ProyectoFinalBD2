@@ -1,6 +1,4 @@
-package com.proyectoBD2.APIrest.model;
-
-import java.util.List;
+package com.proyectoBD2.APIrest.model.ordenServicio;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -8,10 +6,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Document
+@Document 
 @Data 
 @AllArgsConstructor 
 @NoArgsConstructor 
-public class DiagnosticoModel{
-    private List<HallazgosModel> hallazgos;
-} 
+public class AccesoriosEntregadosModel{
+    private String accesoriosEntregados;
+}

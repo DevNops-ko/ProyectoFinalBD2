@@ -1,5 +1,6 @@
-package com.proyectoBD2.APIrest.model;
-
+package com.proyectoBD2.APIrest.model.ordenServicio;
+import org.bson.types.ObjectId;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.AllArgsConstructor;
@@ -10,6 +11,7 @@ import lombok.NoArgsConstructor;
 @Data 
 @AllArgsConstructor 
 @NoArgsConstructor 
-public class AccesoriosEntregadosModel{
-    private String accesoriosEntregados;
+public class TecnicosAsignadosModel{
+    @Id
+    private ObjectId usuarioId;
 }

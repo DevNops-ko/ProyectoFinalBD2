@@ -1,4 +1,4 @@
-package com.proyectoBD2.APIrest.model;
+package com.proyectoBD2.APIrest.model.ordenServicio;
 
 import java.util.List;
 

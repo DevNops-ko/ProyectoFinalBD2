@@ -1,18 +1,16 @@
-package com.proyectoBD2.APIrest.model;
-
+package com.proyectoBD2.APIrest.model.ordenServicio;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Document
+@Document 
 @Data 
 @AllArgsConstructor 
 @NoArgsConstructor 
-public class EvidenciasModel{
+public class FotografiasModel{
     private String nombreArchivo;
-    private String descripcion;
+    private String descripcionFotografia;
     private String ubicacion;
-    
-} 
+}
