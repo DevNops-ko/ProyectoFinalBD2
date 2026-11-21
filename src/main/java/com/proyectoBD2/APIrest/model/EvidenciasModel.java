@@ -1,12 +1,9 @@
-package com.proyectoBD2.APIrest.model.ordenServicio;
-
-import org.springframework.data.mongodb.core.mapping.Document;
+package com.proyectoBD2.APIrest.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Document
 @Data 
 @AllArgsConstructor 
 @NoArgsConstructor 

@@ -1,4 +1,4 @@
-package com.proyectoBD2.APIrest.model.usuarios;
+package com.proyectoBD2.APIrest.model;
 
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -8,7 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Document 
+@Document("usuarios") 
 @Data 
 @AllArgsConstructor 
 @NoArgsConstructor 

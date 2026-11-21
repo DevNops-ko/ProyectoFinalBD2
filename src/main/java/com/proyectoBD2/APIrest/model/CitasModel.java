@@ -1,4 +1,4 @@
-package com.proyectoBD2.APIrest.model.citas;
+package com.proyectoBD2.APIrest.model;
 import java.util.Date;
 import java.util.List;
 
@@ -10,7 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Document 
+@Document("citas")
 @Data 
 @AllArgsConstructor 
 @NoArgsConstructor 
@@ -23,5 +23,5 @@ public class CitasModel {
     private String motivoVisita;
     private String estado;
     private String observacionesCoordinador;
-    private List<citaClienteModel> citaCliente;
+    private List<CitaClienteModel> citaCliente;
 }

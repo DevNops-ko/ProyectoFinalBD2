@@ -1,4 +1,4 @@
-package com.proyectoBD2.APIrest.model.catalogoServicios;
+package com.proyectoBD2.APIrest.model;
 import java.util.List;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -20,6 +20,6 @@ public class CatalagoServiciosModel {
     private String descripcionCS;
     private Integer duracionEstimada;
     private Integer precioReferencia;
-    private List<TareasHabitualesModel> tareasHabituales;
-    private List<RecomendacionesGeneralesModel> recomendacionesGenerales;
+    private List<String> tareasHabituales;
+    private List<String> recomendacionesGenerales;
 }

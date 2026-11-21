@@ -1,4 +1,4 @@
-package com.proyectoBD2.APIrest.model.bicicletas;
+package com.proyectoBD2.APIrest.model;
 import java.util.List;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -8,7 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Document 
+@Document("bicicletas")
 @Data
 @AllArgsConstructor 
 @NoArgsConstructor 
@@ -21,4 +21,8 @@ public class BicicletasModel {
     private String color;
     private String numeroSerie;
     private List<CaracteristicasTecnicasModel> caracteristicasTecnicas;
+    private String suspension; 
+    private String recorrido; 
+    private String bateria; 
+    private String motor; 
 }

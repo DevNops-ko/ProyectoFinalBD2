@@ -1,4 +1,4 @@
-package com.proyectoBD2.APIrest.model.citas;
+package com.proyectoBD2.APIrest.model;
 import java.util.List;
 
 
@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Data 
 @AllArgsConstructor 
 @NoArgsConstructor 
-public class citaClienteModel {
+public class CitaClienteModel {
     private String problemasObservados;
-    private List<serviciosInteresModel> serviciosInteres;
+    private List<ServicioModel> serviciosInteres;
 }

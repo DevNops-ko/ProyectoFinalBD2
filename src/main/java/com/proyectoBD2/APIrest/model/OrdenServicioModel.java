@@ -1,4 +1,4 @@
-package com.proyectoBD2.APIrest.model.ordenServicio;
+package com.proyectoBD2.APIrest.model;
 
 import java.util.Date;
 import java.util.List;
@@ -11,7 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Document 
+@Document("ordenServicio") 
 @Data 
 @AllArgsConstructor 
 @NoArgsConstructor 
@@ -23,16 +23,16 @@ public class OrdenServicioModel {
     private ObjectId bicicletaId;
     private Date fechaRecepcion;
     private Date fechaEstimadaEntrega;
-    private List<TecnicosAsignadosModel> tecnicosAsignados;
+    private List<ObjectId> tecnicosAsignados;
     private String estado;
     private String problemaReportado;
     private String condicionesObservadas;
-    private List<AccesoriosEntregadosModel> accesoriosEntregados;
+    private List<String> accesoriosEntregados;
     private List<FotografiasModel> fotografias;
-    private List<DiagnosticoModel> diagnósticos;
+    private DiagnosticoModel diagnostico;
     private List<HistorialCambiosModel> historialCambios;
-    private List<ValoracionModel> valoracion;
-    private List<RevisionEntregaModel> revisionesEntrega;
-    private List<EntregaModel> entrega;
+    private ValoracionModel valoracion;
+    private RevisionEntregaModel revisionesEntrega;
+    private EntregaModel entrega;
     
 }
