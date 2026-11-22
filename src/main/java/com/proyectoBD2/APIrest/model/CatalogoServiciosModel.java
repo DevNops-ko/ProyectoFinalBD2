@@ -8,7 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Document 
+@Document("catalogoServicios") 
 @Data 
 @AllArgsConstructor 
 @NoArgsConstructor 
@@ -19,7 +19,7 @@ public class CatalogoServiciosModel {
     private String categoria;
     private String descripcionCS;
     private Integer duracionEstimada;
-    private Integer precioReferencia;
+    private Double precioReferencia;
     private List<String> tareasHabituales;
     private List<String> recomendacionesGenerales;
 }

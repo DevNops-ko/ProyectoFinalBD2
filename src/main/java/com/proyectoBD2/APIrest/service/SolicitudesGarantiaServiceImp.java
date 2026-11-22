@@ -6,11 +6,13 @@ import java.util.Optional;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.proyectoBD2.APIrest.model.SolicitudesGarantiaModel;
 import com.proyectoBD2.APIrest.repository.ISolicitudesGarantiaRepository;
 
+@Service
 public class SolicitudesGarantiaServiceImp implements ISolicitudesGarantiaService {
     @Autowired ISolicitudesGarantiaRepository solicitudGarantiaRepository;
     @Autowired ITrabajosService trabajoService;

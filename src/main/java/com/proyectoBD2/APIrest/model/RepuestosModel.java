@@ -11,11 +11,11 @@ import lombok.NoArgsConstructor;
 @Data 
 @AllArgsConstructor 
 @NoArgsConstructor 
-public class RespuestosModel {
+public class RepuestosModel {
     @Id
     private ObjectId id;
     private String nombre;
     private String especificaciones;
-    private Integer precio;
+    private Double precio;
 
 }

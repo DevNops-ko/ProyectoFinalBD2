@@ -18,7 +18,7 @@ public class CitasModel {
     @Id 
     private ObjectId id;
     private ObjectId usuarioId;
-    private ObjectId biciletaId;
+    private ObjectId bicicletaId;
     private Date fechaHora;
     private String motivoVisita;
     private String estado;

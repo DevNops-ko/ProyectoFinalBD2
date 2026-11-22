@@ -33,6 +33,6 @@ public class OrdenServicioModel {
     private DiagnosticoModel diagnostico;
     private List<HistorialCambiosModel> historialCambios;
     private ValoracionModel valoracion;
-    private RevisionEntregaModel revisionesEntrega;
+    private RevisionEntregaModel revisionEntrega;
     private EntregaModel entrega; 
 }

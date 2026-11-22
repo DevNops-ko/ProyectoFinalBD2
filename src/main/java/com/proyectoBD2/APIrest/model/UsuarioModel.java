@@ -16,9 +16,9 @@ public class UsuarioModel {
     @Id 
     private ObjectId id;
     private String nombreCompleto;
-    private Integer documentoIdentificacion;
+    private String documentoIdentificacion;
     private String correo;
-    private Integer numTelefono;
+    private String numTelefono;
     private String rol;
     private String direccion;
 }
