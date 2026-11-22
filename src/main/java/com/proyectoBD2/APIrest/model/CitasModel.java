@@ -23,5 +23,5 @@ public class CitasModel {
     private String motivoVisita;
     private String estado;
     private String observacionesCoordinador;
-    private List<citaClienteModel> citaCliente;
+    private List<CitaClienteModel> citaCliente;
 }

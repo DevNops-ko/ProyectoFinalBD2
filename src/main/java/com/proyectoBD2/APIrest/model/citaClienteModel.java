@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Data 
 @AllArgsConstructor 
 @NoArgsConstructor 
-public class citaClienteModel {
+public class CitaClienteModel {
     private String problemasObservados;
     private List<ServicioModel> serviciosInteres;
 }
