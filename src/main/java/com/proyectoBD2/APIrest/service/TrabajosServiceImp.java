@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.proyectoBD2.APIrest.model.RepuestosPrevistosModel;
 import com.proyectoBD2.APIrest.model.TrabajosModel;
 import com.proyectoBD2.APIrest.repository.ITrabajosRepository;
 
@@ -17,6 +18,8 @@ public class TrabajosServiceImp implements ITrabajosService {
     @Autowired ITrabajosRepository trabajoRepository;
     @Autowired IOrdenServicioService ordenServicioService;
     @Autowired IUsuarioService usuarioService;
+    @Autowired ICatalogoServiciosService catalogoServiciosService;
+    @Autowired IRepuestosService repuestosService;
 
     @Override
     public TrabajosModel crearTrabajo(TrabajosModel trabajo) {
@@ -27,6 +30,14 @@ public class TrabajosServiceImp implements ITrabajosService {
         ObjectId tecnicoId = trabajo.getTecnicoId();
         if (usuarioService.buscarUsuariosPorId(tecnicoId) == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El tecnico con ID " + tecnicoId + " no existe o es nulo.");
+        }
+        if (trabajo.getRepuestosPrevistos() != null) {
+            for (RepuestosPrevistosModel repuestoPrevisto : trabajo.getRepuestosPrevistos()) {
+                ObjectId repuestoId = repuestoPrevisto.getRepuestoId();
+                if (repuestosService.buscarRepuestosPorId(repuestoId) == null) {
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El repuesto con ID " + repuestoId + " no existe.");
+                }
+            }
         }
     
         return trabajoRepository.save(trabajo);
