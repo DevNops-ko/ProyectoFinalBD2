@@ -18,6 +18,6 @@ public class HallazgosModel{
     private String observacionesHa;
     private String condicion;
     private String accionesRecomendadas;
-    private ObjectId usuarioId;
+    private ObjectId tecnicoId;
     private List<EvidenciasModel> evidencias;
 }

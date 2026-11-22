@@ -23,6 +23,7 @@ public class OrdenServicioModel {
     private ObjectId bicicletaId;
     private Date fechaRecepcion;
     private Date fechaEstimadaEntrega;
+    private ObjectId coordinadorResponsable;
     private List<ObjectId> tecnicosAsignados;
     private String estado;
     private String problemaReportado;
@@ -33,6 +34,5 @@ public class OrdenServicioModel {
     private List<HistorialCambiosModel> historialCambios;
     private ValoracionModel valoracion;
     private RevisionEntregaModel revisionesEntrega;
-    private EntregaModel entrega;
-    
+    private EntregaModel entrega; 
 }
