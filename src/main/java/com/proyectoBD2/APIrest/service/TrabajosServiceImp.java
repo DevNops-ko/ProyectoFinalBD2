@@ -24,9 +24,9 @@ public class TrabajosServiceImp implements ITrabajosService {
         if (ordenServicioService.buscarOrdenesServicioPorId(ordenServicioId) == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "La orden de servicio con ID " + ordenServicioId + " no existe o es nulo.");
         }
-        ObjectId usuarioId = trabajo.getUsuarioId();
-        if (usuarioService.buscarUsuariosPorId(usuarioId) == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario con ID " + usuarioId + " no existe o es nulo.");
+        ObjectId tecnicoId = trabajo.getTecnicoId();
+        if (usuarioService.buscarUsuariosPorId(tecnicoId) == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El tecnico con ID " + tecnicoId + " no existe o es nulo.");
         }
     
         return trabajoRepository.save(trabajo);

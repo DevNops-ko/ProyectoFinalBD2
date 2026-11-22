@@ -18,7 +18,7 @@ public class TrabajosModel {
     @Id
     private ObjectId id;
     private ObjectId ordenServicioId;
-    private ObjectId usuarioId;
+    private ObjectId tecnicoId;
     private String descripcionIntervencion;
     private String componenteInvolucrado;
     private Double costoManoObra;

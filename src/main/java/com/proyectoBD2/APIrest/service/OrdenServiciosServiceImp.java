@@ -29,10 +29,10 @@ public class OrdenServiciosServiceImp implements IOrdenServicioService {
         if (usuarioService.buscarUsuariosPorId(usuarioId) == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario con ID " + usuarioId + " no existe o es nulo.");
         }
-        /* ObjectId coordinadorResponsable = ordenServicio.getCoordinadorResponsable();
+        ObjectId coordinadorResponsable = ordenServicio.getCoordinadorResponsable();
         if (usuarioService.buscarUsuariosPorId(coordinadorResponsable) == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario con ID " + coordinadorResponsable + " no existe o es nulo.");
-        }*/
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El coordinador con ID " + coordinadorResponsable + " no existe o es nulo.");
+        }
         if (ordenServicio.getTecnicosAsignados() != null) {
             for (ObjectId idItem : ordenServicio.getTecnicosAsignados()) {
                 if (usuarioService.buscarUsuariosPorId(idItem) == null) {
@@ -40,10 +40,10 @@ public class OrdenServiciosServiceImp implements IOrdenServicioService {
                 }
             }
         }
-        /*ObjectId citaId = ordenServicio.getCitaId();
+        ObjectId citaId = ordenServicio.getCitaId();
         if (citaId != null && citaService.buscarCitasPorId(citaId) == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "La cita con ID " + citaId + " no existe o es nulo.");
-        }*/
+        }
         
         return ordenServicioRepository.save(ordenServicio);
     }

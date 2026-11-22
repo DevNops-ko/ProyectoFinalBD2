@@ -1,5 +1,4 @@
 package com.proyectoBD2.APIrest.model;
-import java.util.List;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -18,9 +17,10 @@ public class BicicletasModel {
     private ObjectId usuarioId;
     private String marca;
     private Integer modelo;
+    private String tipo;
     private String color;
     private String numeroSerie;
-    private List<CaracteristicasTecnicasModel> caracteristicasTecnicas;
+    private CaracteristicasTecnicasModel caracteristicasTecnicas;
     private String suspension; 
     private String recorrido; 
     private String bateria; 
