@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Data 
 @AllArgsConstructor 
 @NoArgsConstructor 
-public class CatalagoServiciosModel {
+public class CatalogoServiciosModel {
     @Id
     private ObjectId id;
     private String nombre;
