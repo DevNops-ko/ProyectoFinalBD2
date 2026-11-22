@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.proyectoBD2.APIrest.model.CitaClienteModel;
 import com.proyectoBD2.APIrest.model.CitasModel;
 import com.proyectoBD2.APIrest.repository.ICitasRepository;
 
@@ -17,6 +18,7 @@ public class CitasServiceImp implements ICitasService {
     @Autowired ICitasRepository citaRepository;
     @Autowired IUsuarioService usuarioService;
     @Autowired IBicicletasService bicicletaService;
+    @Autowired ICatalogoServiciosService catalogoServiciosService;
 
     @Override
     public CitasModel crearCita(CitasModel cita) {
@@ -27,6 +29,17 @@ public class CitasServiceImp implements ICitasService {
         ObjectId bicicletaId = cita.getBicicletaId();
         if (bicicletaService.buscarBicicletasPorId(bicicletaId) == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "La bicicleta con ID " + bicicletaId + " no existe o es nulo.");
+        }
+        if (cita.getCitaCliente() != null) {
+            for (CitaClienteModel citaCliente : cita.getCitaCliente()) {
+                if (citaCliente.getServiciosInteres() != null) {
+                    for (ObjectId servicioId : citaCliente.getServiciosInteres()) {
+                        if (catalogoServiciosService.buscarServiciosPorId(servicioId) == null) {
+                            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El servicio con ID " + servicioId + " no existe en el catalogo.");
+                        }
+                    }
+                }
+            }
         }
         return citaRepository.save(cita);
     }
