@@ -10,4 +10,6 @@ public interface IUsuarioService {
     UsuarioModel crearUsuario(UsuarioModel usuario);
     List<UsuarioModel> listarUsuarios();
     UsuarioModel buscarUsuariosPorId(ObjectId idUsuario);
+    UsuarioModel actualizarUsuario(ObjectId idUsuario, UsuarioModel usuario);
+    void eliminarUsuario(ObjectId idUsuario);
 }

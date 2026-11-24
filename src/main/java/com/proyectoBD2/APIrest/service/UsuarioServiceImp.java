@@ -31,5 +31,22 @@ public class UsuarioServiceImp implements IUsuarioService {
         }
         Optional<UsuarioModel> usuarioExistente = usuarioRepository.findById(usuarioId);
         return usuarioExistente.orElse(null);
+        
+    }
+
+    @Override
+    public UsuarioModel actualizarUsuario(ObjectId usuarioId, UsuarioModel usuarioActualizado) {
+        if (usuarioId == null || !usuarioRepository.existsById(usuarioId)) {
+            return null;
+        }
+        usuarioActualizado.setId(usuarioId);
+        return usuarioRepository.save(usuarioActualizado);
+    }
+
+    @Override
+    public void eliminarUsuario(ObjectId usuarioId) {
+        if (usuarioId != null) {
+            usuarioRepository.deleteById(usuarioId);
+        }
     }
 }
