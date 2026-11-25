@@ -12,6 +12,8 @@ import org.springframework.web.server.ResponseStatusException;
 import com.proyectoBD2.APIrest.model.CitaClienteModel;
 import com.proyectoBD2.APIrest.model.CitasModel;
 import com.proyectoBD2.APIrest.repository.ICitasRepository;
+import com.proyectoBD2.APIrest.util.Constantes;
+import com.proyectoBD2.APIrest.util.Validaciones;
 
 @Service
 public class CitasServiceImp implements ICitasService {
@@ -19,6 +21,29 @@ public class CitasServiceImp implements ICitasService {
     @Autowired IUsuarioService usuarioService;
     @Autowired IBicicletasService bicicletaService;
     @Autowired ICatalogoServiciosService catalogoServiciosService;
+
+    private void validarCita(CitasModel cita) {
+        usuarioService.validarRol(cita.getUsuarioId(), Constantes.ROL_CLIENTE);
+
+        ObjectId bicicletaId = cita.getBicicletaId();
+        if (bicicletaService.buscarBicicletasPorId(bicicletaId) == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "La bicicleta con ID " + bicicletaId + " no existe o es nulo.");
+        }
+
+        if (cita.getCitaCliente() != null) {
+            for (CitaClienteModel citaCliente : cita.getCitaCliente()) {
+                if (citaCliente.getServiciosInteres() != null) {
+                    for (ObjectId servicioId : citaCliente.getServiciosInteres()) {
+                        if (catalogoServiciosService.buscarServiciosPorId(servicioId) == null) {
+                            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El servicio con ID " + servicioId + " no existe en el catalogo.");
+                        }
+                    }
+                }
+            }
+        }
+
+        Validaciones.validarEnum("estado", cita.getEstado(), Constantes.ESTADOS_CITA);
+    }
 
     @Override
     public CitasModel crearCita(CitasModel cita) {

@@ -5,13 +5,16 @@ import java.util.Optional;
 
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.proyectoBD2.APIrest.model.UsuarioModel;
 import com.proyectoBD2.APIrest.repository.IUsuarioRepository;
 
 @Service
 public class UsuarioServiceImp implements IUsuarioService {
+
     @Autowired IUsuarioRepository usuarioRepository;
 
     @Override
@@ -31,7 +34,6 @@ public class UsuarioServiceImp implements IUsuarioService {
         }
         Optional<UsuarioModel> usuarioExistente = usuarioRepository.findById(usuarioId);
         return usuarioExistente.orElse(null);
-        
     }
 
     @Override
@@ -48,5 +50,20 @@ public class UsuarioServiceImp implements IUsuarioService {
         if (usuarioId != null) {
             usuarioRepository.deleteById(usuarioId);
         }
+    }
+
+    @Override
+    public UsuarioModel validarRol(ObjectId usuarioId, String rolEsperado) {
+        UsuarioModel usuario = buscarUsuariosPorId(usuarioId);
+        if (usuario == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "El usuario con ID " + usuarioId + " no existe o es nulo.");
+        }
+        if (usuario.getRol() == null || !usuario.getRol().equals(rolEsperado)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "El usuario con ID " + usuarioId + " tiene rol '" + usuario.getRol()
+                            + "' y esta operacion exige rol '" + rolEsperado + "'.");
+        }
+        return usuario;
     }
 }
