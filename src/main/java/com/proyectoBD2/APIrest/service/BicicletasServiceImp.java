@@ -11,11 +11,18 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.proyectoBD2.APIrest.model.BicicletasModel;
 import com.proyectoBD2.APIrest.repository.IBicicletasRepository;
+import com.proyectoBD2.APIrest.util.Constantes;
+import com.proyectoBD2.APIrest.util.Validaciones;
 
 @Service
 public class BicicletasServiceImp implements IBicicletasService {
     @Autowired IBicicletasRepository bicicletaRepository;
     @Autowired IUsuarioService usuarioService;
+
+    private void validarBicicleta(BicicletasModel bicicleta) {
+        usuarioService.validarRol(bicicleta.getUsuarioId(), Constantes.ROL_CLIENTE);
+        bicicleta.setTipo(Validaciones.normalizarTipoBicicleta(bicicleta.getTipo()));
+    }
 
     @Override
     public BicicletasModel crearBicicleta(BicicletasModel bicicleta) {
