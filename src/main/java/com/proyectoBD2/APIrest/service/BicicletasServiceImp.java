@@ -16,20 +16,19 @@ import com.proyectoBD2.APIrest.util.Validaciones;
 
 @Service
 public class BicicletasServiceImp implements IBicicletasService {
+
     @Autowired IBicicletasRepository bicicletaRepository;
     @Autowired IUsuarioService usuarioService;
 
-    public void validarBicicleta(BicicletasModel bicicleta) {
+    
+    private void validarBicicleta(BicicletasModel bicicleta) {
         usuarioService.validarRol(bicicleta.getUsuarioId(), Constantes.ROL_CLIENTE);
         bicicleta.setTipo(Validaciones.normalizarTipoBicicleta(bicicleta.getTipo()));
     }
 
     @Override
     public BicicletasModel crearBicicleta(BicicletasModel bicicleta) {
-        ObjectId usuarioId = bicicleta.getUsuarioId();
-        if (usuarioService.buscarUsuariosPorId(usuarioId) == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario con ID " + usuarioId + " no existe o es nulo.");
-        }
+        validarBicicleta(bicicleta);
         return bicicletaRepository.save(bicicleta);
     }
 
@@ -52,10 +51,7 @@ public class BicicletasServiceImp implements IBicicletasService {
         if (buscarBicicletasPorId(bicicletaId) == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe un registro con ID " + bicicletaId + " en bicicletas.");
         }
-        ObjectId usuarioId = bicicleta.getUsuarioId();
-        if (usuarioId == null || usuarioService.buscarUsuariosPorId(usuarioId) == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario con ID " + usuarioId + " no existe o es nulo.");
-        }
+        validarBicicleta(bicicleta);
         bicicleta.setId(bicicletaId);
         return bicicletaRepository.save(bicicleta);
     }
