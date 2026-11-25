@@ -10,4 +10,6 @@ public interface ICitasService {
     CitasModel crearCita(CitasModel cita);
     List<CitasModel> listarCitas();
     CitasModel buscarCitasPorId(ObjectId idCita);
+    CitasModel actualizarCita(ObjectId idCita, CitasModel cita);
+    void eliminarCita(ObjectId idCita);
 }

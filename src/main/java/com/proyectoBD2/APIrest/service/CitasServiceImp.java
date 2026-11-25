@@ -57,4 +57,41 @@ public class CitasServiceImp implements ICitasService {
         Optional<CitasModel> existente = citaRepository.findById(idCita);
         return existente.orElse(null);
     }
+    
+    @Override
+    public CitasModel actualizarCita(ObjectId idCita, CitasModel cita) {
+        if (buscarCitasPorId(idCita) == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe un registro con ID " + idCita + " en citas.");
+        }
+        ObjectId usuarioId = cita.getUsuarioId();
+        if (usuarioService.buscarUsuariosPorId(usuarioId) == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario con ID " + usuarioId + " no existe o es nulo.");
+        }
+        ObjectId bicicletaId = cita.getBicicletaId();
+        if (bicicletaService.buscarBicicletasPorId(bicicletaId) == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "La bicicleta con ID " + bicicletaId + " no existe o es nulo.");
+        }
+        if (cita.getCitaCliente() != null) {
+            for (CitaClienteModel citaCliente : cita.getCitaCliente()) {
+                if (citaCliente.getServiciosInteres() != null) {
+                    for (ObjectId servicioId : citaCliente.getServiciosInteres()) {
+                        if (catalogoServiciosService.buscarServiciosPorId(servicioId) == null) {
+                            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El servicio con ID " + servicioId + " no existe en el catalogo.");
+                        }
+                    }
+                }
+            }
+        }
+        cita.setId(idCita);
+        return citaRepository.save(cita);
+    }
+
+    @Override
+    public void eliminarCita(ObjectId idCita) {
+        if (buscarCitasPorId(idCita) == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe un registro con ID " + idCita + " en citas.");
+        }
+        citaRepository.deleteById(idCita);
+    }
+
 }

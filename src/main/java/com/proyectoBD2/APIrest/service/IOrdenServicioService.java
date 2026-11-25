@@ -10,4 +10,6 @@ public interface IOrdenServicioService {
     OrdenServicioModel crearOrdenServicio(OrdenServicioModel ordenServicio);
     List<OrdenServicioModel> listarOrdenesServicio();
     OrdenServicioModel buscarOrdenesServicioPorId(ObjectId idOrdenServicio);
+    OrdenServicioModel actualizarOrdenServicio(ObjectId idOrdenServicio, OrdenServicioModel ordenServicio);
+    void eliminarOrdenServicio(ObjectId idOrdenServicio);
 }

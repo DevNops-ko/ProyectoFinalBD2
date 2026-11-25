@@ -12,7 +12,6 @@ public class ManejadorErrores {
     @ExceptionHandler(DataAccessException.class)
     public ResponseEntity<String> manejarErrorDeMongo(DataAccessException e) {
         String causa = e.getMostSpecificCause().getMessage();
-        // Mongo rechaza el documento cuando no cumple el esquema (validationAction: error, codigo 121)
         if (causa != null && (causa.contains("Document failed validation") || causa.contains("code=121"))) {
             return new ResponseEntity<String>(
                 "El documento no cumple el esquema de validacion de MongoDB: " + causa, HttpStatus.BAD_REQUEST);

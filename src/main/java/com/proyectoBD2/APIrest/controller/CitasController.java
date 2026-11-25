@@ -6,9 +6,11 @@ import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -40,4 +42,16 @@ public class CitasController {
         }
         return new ResponseEntity<CitasModel>(cita, HttpStatus.OK);
     }
+
+    @PutMapping("/{citaId}")
+    public ResponseEntity<CitasModel> actualizarCita(@PathVariable ObjectId citaId, @RequestBody CitasModel cita){
+        return new ResponseEntity<CitasModel>(citaService.actualizarCita(citaId, cita), HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{citaId}")
+    public ResponseEntity<String> eliminarCita(@PathVariable ObjectId citaId){
+        citaService.eliminarCita(citaId);
+        return new ResponseEntity<String>("Cita con ID " + citaId + " eliminada correctamente.", HttpStatus.OK);
+    }
+
 }
