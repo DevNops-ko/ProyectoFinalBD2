@@ -39,7 +39,8 @@ public class TrabajosServiceImp implements ITrabajosService {
                     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El repuesto con ID " + repuestoId + " no existe.");
                 }
             }
-        }  
+        }
+
         if (trabajo.getAutorizacion() == null) {
             trabajo.setAutorizacion(new AutorizacionModel(Constantes.DECISION_PENDIENTE, null, null));
         }
