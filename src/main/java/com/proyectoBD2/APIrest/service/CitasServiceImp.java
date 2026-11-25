@@ -22,7 +22,7 @@ public class CitasServiceImp implements ICitasService {
     @Autowired IBicicletasService bicicletaService;
     @Autowired ICatalogoServiciosService catalogoServiciosService;
 
-    private void validarCita(CitasModel cita) {
+    public void validarCita(CitasModel cita) {
         usuarioService.validarRol(cita.getUsuarioId(), Constantes.ROL_CLIENTE);
 
         ObjectId bicicletaId = cita.getBicicletaId();

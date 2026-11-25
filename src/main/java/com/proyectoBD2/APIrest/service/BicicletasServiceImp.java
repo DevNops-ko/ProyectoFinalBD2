@@ -19,7 +19,7 @@ public class BicicletasServiceImp implements IBicicletasService {
     @Autowired IBicicletasRepository bicicletaRepository;
     @Autowired IUsuarioService usuarioService;
 
-    private void validarBicicleta(BicicletasModel bicicleta) {
+    public void validarBicicleta(BicicletasModel bicicleta) {
         usuarioService.validarRol(bicicleta.getUsuarioId(), Constantes.ROL_CLIENTE);
         bicicleta.setTipo(Validaciones.normalizarTipoBicicleta(bicicleta.getTipo()));
     }

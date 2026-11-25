@@ -24,7 +24,7 @@ public class TrabajosServiceImp implements ITrabajosService {
     @Autowired ICatalogoServiciosService catalogoServiciosService;
     @Autowired IRepuestosService repuestosService;
 
-    private void validarTrabajo(TrabajosModel trabajo) {
+    public void validarTrabajo(TrabajosModel trabajo) {
         ObjectId ordenServicioId = trabajo.getOrdenServicioId();
         if (ordenServicioService.buscarOrdenesServicioPorId(ordenServicioId) == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "La orden de servicio con ID " + ordenServicioId + " no existe o es nulo.");
@@ -41,7 +41,6 @@ public class TrabajosServiceImp implements ITrabajosService {
             }
         }
 
-        // La autorizacion es obligatoria en el esquema: si no se envia, el trabajo nace "Pendiente".
         if (trabajo.getAutorizacion() == null) {
             trabajo.setAutorizacion(new AutorizacionModel(Constantes.DECISION_PENDIENTE, null, null));
         }
