@@ -10,4 +10,6 @@ public interface ISolicitudesGarantiaService {
     SolicitudesGarantiaModel crearSolicitudGarantia(SolicitudesGarantiaModel solicitudGarantia);
     List<SolicitudesGarantiaModel> listarSolicitudesGarantia();
     SolicitudesGarantiaModel buscarSolicitudesGarantiaPorId(ObjectId idSolicitudGarantia);
+    SolicitudesGarantiaModel actualizarSolicitudGarantia(ObjectId idSolicitudGarantia, SolicitudesGarantiaModel solicitudGarantia);
+    void eliminarSolicitudGarantia(ObjectId idSolicitudGarantia);
 }

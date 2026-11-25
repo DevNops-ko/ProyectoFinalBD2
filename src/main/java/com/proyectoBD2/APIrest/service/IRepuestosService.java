@@ -10,4 +10,6 @@ public interface IRepuestosService {
     RepuestosModel crearRepuesto(RepuestosModel repuesto);
     List<RepuestosModel> listarRepuestos();
     RepuestosModel buscarRepuestosPorId(ObjectId idRepuesto);
+    RepuestosModel actualizarRepuesto(ObjectId idRepuesto, RepuestosModel repuesto);
+    void eliminarRepuesto(ObjectId idRepuesto);
 }

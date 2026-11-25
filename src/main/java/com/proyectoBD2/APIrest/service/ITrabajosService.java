@@ -10,4 +10,6 @@ public interface ITrabajosService {
     TrabajosModel crearTrabajo(TrabajosModel trabajo);
     List<TrabajosModel> listarTrabajos();
     TrabajosModel buscarTrabajosPorId(ObjectId idTrabajo);
+    TrabajosModel actualizarTrabajo(ObjectId idTrabajo, TrabajosModel trabajo);
+    void eliminarTrabajo(ObjectId idTrabajo);
 }

@@ -6,9 +6,11 @@ import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -40,4 +42,16 @@ public class SolicitudesGarantiaController {
         }
         return new ResponseEntity<SolicitudesGarantiaModel>(solicitudGarantia, HttpStatus.OK);
     }
+
+    @PutMapping("/{solicitudGarantiaId}")
+    public ResponseEntity<SolicitudesGarantiaModel> actualizarSolicitudGarantia(@PathVariable ObjectId solicitudGarantiaId, @RequestBody SolicitudesGarantiaModel solicitudGarantia){
+        return new ResponseEntity<SolicitudesGarantiaModel>(solicitudGarantiaService.actualizarSolicitudGarantia(solicitudGarantiaId, solicitudGarantia), HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{solicitudGarantiaId}")
+    public ResponseEntity<String> eliminarSolicitudGarantia(@PathVariable ObjectId solicitudGarantiaId){
+        solicitudGarantiaService.eliminarSolicitudGarantia(solicitudGarantiaId);
+        return new ResponseEntity<String>("Solicitud de garantía con ID " + solicitudGarantiaId + " eliminada correctamente.", HttpStatus.OK);
+    }
+
 }

@@ -56,4 +56,38 @@ public class TrabajosServiceImp implements ITrabajosService {
         Optional<TrabajosModel> existente = trabajoRepository.findById(idTrabajo);
         return existente.orElse(null);
     }
+
+    @Override
+    public TrabajosModel actualizarTrabajo(ObjectId idTrabajo, TrabajosModel trabajo) {
+        if (buscarTrabajosPorId(idTrabajo) == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe un registro con ID " + idTrabajo + " en trabajos.");
+        }
+        ObjectId ordenServicioId = trabajo.getOrdenServicioId();
+        if (ordenServicioService.buscarOrdenesServicioPorId(ordenServicioId) == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "La orden de servicio con ID " + ordenServicioId + " no existe o es nulo.");
+        }
+        ObjectId tecnicoId = trabajo.getTecnicoId();
+        if (usuarioService.buscarUsuariosPorId(tecnicoId) == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El tecnico con ID " + tecnicoId + " no existe o es nulo.");
+        }
+        if (trabajo.getRepuestosPrevistos() != null) {
+            for (RepuestosPrevistosModel repuestoPrevisto : trabajo.getRepuestosPrevistos()) {
+                ObjectId repuestoId = repuestoPrevisto.getRepuestoId();
+                if (repuestosService.buscarRepuestosPorId(repuestoId) == null) {
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El repuesto con ID " + repuestoId + " no existe.");
+                }
+            }
+        }
+        trabajo.setId(idTrabajo);
+        return trabajoRepository.save(trabajo);
+    }
+
+    @Override
+    public void eliminarTrabajo(ObjectId idTrabajo) {
+        if (buscarTrabajosPorId(idTrabajo) == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe un registro con ID " + idTrabajo + " en trabajos.");
+        }
+        trabajoRepository.deleteById(idTrabajo);
+    }
+
 }
