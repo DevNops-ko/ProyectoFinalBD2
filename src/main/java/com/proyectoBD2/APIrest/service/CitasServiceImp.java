@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.proyectoBD2.APIrest.model.BicicletasModel;
 import com.proyectoBD2.APIrest.model.CitaClienteModel;
 import com.proyectoBD2.APIrest.model.CitasModel;
 import com.proyectoBD2.APIrest.repository.ICitasRepository;
@@ -17,17 +18,25 @@ import com.proyectoBD2.APIrest.util.Validaciones;
 
 @Service
 public class CitasServiceImp implements ICitasService {
+
     @Autowired ICitasRepository citaRepository;
     @Autowired IUsuarioService usuarioService;
     @Autowired IBicicletasService bicicletaService;
     @Autowired ICatalogoServiciosService catalogoServiciosService;
 
-    public void validarCita(CitasModel cita) {
-        usuarioService.validarRol(cita.getUsuarioId(), Constantes.ROL_CLIENTE);
+
+    private void validarCita(CitasModel cita) {
+        ObjectId usuarioId = cita.getUsuarioId();
+        usuarioService.validarRol(usuarioId, Constantes.ROL_CLIENTE);
 
         ObjectId bicicletaId = cita.getBicicletaId();
-        if (bicicletaService.buscarBicicletasPorId(bicicletaId) == null) {
+        BicicletasModel bicicleta = bicicletaService.buscarBicicletasPorId(bicicletaId);
+        if (bicicleta == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "La bicicleta con ID " + bicicletaId + " no existe o es nulo.");
+        }
+        if (!usuarioId.equals(bicicleta.getUsuarioId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "La bicicleta con ID " + bicicletaId + " no pertenece al cliente con ID " + usuarioId + ".");
         }
 
         if (cita.getCitaCliente() != null) {
@@ -47,25 +56,7 @@ public class CitasServiceImp implements ICitasService {
 
     @Override
     public CitasModel crearCita(CitasModel cita) {
-        ObjectId usuarioId = cita.getUsuarioId();
-        if (usuarioService.buscarUsuariosPorId(usuarioId) == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario con ID " + usuarioId + " no existe o es nulo.");
-        }
-        ObjectId bicicletaId = cita.getBicicletaId();
-        if (bicicletaService.buscarBicicletasPorId(bicicletaId) == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "La bicicleta con ID " + bicicletaId + " no existe o es nulo.");
-        }
-        if (cita.getCitaCliente() != null) {
-            for (CitaClienteModel citaCliente : cita.getCitaCliente()) {
-                if (citaCliente.getServiciosInteres() != null) {
-                    for (ObjectId servicioId : citaCliente.getServiciosInteres()) {
-                        if (catalogoServiciosService.buscarServiciosPorId(servicioId) == null) {
-                            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El servicio con ID " + servicioId + " no existe en el catalogo.");
-                        }
-                    }
-                }
-            }
-        }
+        validarCita(cita);
         return citaRepository.save(cita);
     }
 
@@ -82,31 +73,13 @@ public class CitasServiceImp implements ICitasService {
         Optional<CitasModel> existente = citaRepository.findById(idCita);
         return existente.orElse(null);
     }
-    
+
     @Override
     public CitasModel actualizarCita(ObjectId idCita, CitasModel cita) {
         if (buscarCitasPorId(idCita) == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe un registro con ID " + idCita + " en citas.");
         }
-        ObjectId usuarioId = cita.getUsuarioId();
-        if (usuarioService.buscarUsuariosPorId(usuarioId) == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario con ID " + usuarioId + " no existe o es nulo.");
-        }
-        ObjectId bicicletaId = cita.getBicicletaId();
-        if (bicicletaService.buscarBicicletasPorId(bicicletaId) == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "La bicicleta con ID " + bicicletaId + " no existe o es nulo.");
-        }
-        if (cita.getCitaCliente() != null) {
-            for (CitaClienteModel citaCliente : cita.getCitaCliente()) {
-                if (citaCliente.getServiciosInteres() != null) {
-                    for (ObjectId servicioId : citaCliente.getServiciosInteres()) {
-                        if (catalogoServiciosService.buscarServiciosPorId(servicioId) == null) {
-                            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El servicio con ID " + servicioId + " no existe en el catalogo.");
-                        }
-                    }
-                }
-            }
-        }
+        validarCita(cita);
         cita.setId(idCita);
         return citaRepository.save(cita);
     }
@@ -118,5 +91,4 @@ public class CitasServiceImp implements ICitasService {
         }
         citaRepository.deleteById(idCita);
     }
-
 }

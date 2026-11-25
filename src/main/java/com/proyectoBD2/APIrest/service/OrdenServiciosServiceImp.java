@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.proyectoBD2.APIrest.model.BicicletasModel;
+import com.proyectoBD2.APIrest.model.CitasModel;
 import com.proyectoBD2.APIrest.model.HallazgosModel;
 import com.proyectoBD2.APIrest.model.HistorialCambiosModel;
 import com.proyectoBD2.APIrest.model.OrdenServicioModel;
@@ -18,18 +20,26 @@ import com.proyectoBD2.APIrest.util.Validaciones;
 
 @Service
 public class OrdenServiciosServiceImp implements IOrdenServicioService {
+
     @Autowired IOrdenServicioRepository ordenServicioRepository;
     @Autowired IBicicletasService bicicletaService;
     @Autowired IUsuarioService usuarioService;
     @Autowired ICitasService citaService;
 
-    public void validarOrden(OrdenServicioModel ordenServicio) {
+    private void validarOrden(OrdenServicioModel ordenServicio) {
+        ObjectId usuarioId = ordenServicio.getUsuarioId();
+        usuarioService.validarRol(usuarioId, Constantes.ROL_CLIENTE);
+
         ObjectId bicicletaId = ordenServicio.getBicicletaId();
-        if (bicicletaService.buscarBicicletasPorId(bicicletaId) == null) {
+        BicicletasModel bicicleta = bicicletaService.buscarBicicletasPorId(bicicletaId);
+        if (bicicleta == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "La bicicleta con ID " + bicicletaId + " no existe o es nulo.");
         }
+        if (!usuarioId.equals(bicicleta.getUsuarioId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "La bicicleta con ID " + bicicletaId + " no pertenece al cliente con ID " + usuarioId + ".");
+        }
 
-        usuarioService.validarRol(ordenServicio.getUsuarioId(), Constantes.ROL_CLIENTE);
         usuarioService.validarRol(ordenServicio.getCoordinadorResponsable(), Constantes.ROL_COORDINADOR);
 
         if (ordenServicio.getTecnicosAsignados() != null) {
@@ -39,8 +49,15 @@ public class OrdenServiciosServiceImp implements IOrdenServicioService {
         }
 
         ObjectId citaId = ordenServicio.getCitaId();
-        if (citaId != null && citaService.buscarCitasPorId(citaId) == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "La cita con ID " + citaId + " no existe o es nulo.");
+        if (citaId != null) {
+            CitasModel cita = citaService.buscarCitasPorId(citaId);
+            if (cita == null) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "La cita con ID " + citaId + " no existe o es nulo.");
+            }
+            if (!usuarioId.equals(cita.getUsuarioId()) || !bicicletaId.equals(cita.getBicicletaId())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "La cita con ID " + citaId + " no corresponde a este cliente y esta bicicleta.");
+            }
         }
 
         Validaciones.validarEnum("estado", ordenServicio.getEstado(), Constantes.ESTADOS_ORDEN);
@@ -53,37 +70,19 @@ public class OrdenServiciosServiceImp implements IOrdenServicioService {
 
         if (ordenServicio.getDiagnostico() != null && ordenServicio.getDiagnostico().getHallazgos() != null) {
             for (HallazgosModel hallazgo : ordenServicio.getDiagnostico().getHallazgos()) {
-                usuarioService.validarRol(hallazgo.getTecnicoId(), Constantes.ROL_TECNICO);
+                ObjectId tecnicoId = hallazgo.getTecnicoId();
+                usuarioService.validarRol(tecnicoId, Constantes.ROL_TECNICO);
+                if (ordenServicio.getTecnicosAsignados() == null || !ordenServicio.getTecnicosAsignados().contains(tecnicoId)) {
+                    throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                            "El tecnico con ID " + tecnicoId + " registro un hallazgo pero no esta en tecnicosAsignados de la orden.");
+                }
             }
         }
     }
 
     @Override
     public OrdenServicioModel crearOrdenServicio(OrdenServicioModel ordenServicio) {
-        ObjectId bicicletaId = ordenServicio.getBicicletaId();
-        if (bicicletaService.buscarBicicletasPorId(bicicletaId) == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "La bicicleta con ID " + bicicletaId + " no existe o es nulo.");
-        }
-        ObjectId usuarioId = ordenServicio.getUsuarioId();
-        if (usuarioService.buscarUsuariosPorId(usuarioId) == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario con ID " + usuarioId + " no existe o es nulo.");
-        }
-        ObjectId coordinadorResponsable = ordenServicio.getCoordinadorResponsable();
-        if (usuarioService.buscarUsuariosPorId(coordinadorResponsable) == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El coordinador con ID " + coordinadorResponsable + " no existe o es nulo.");
-        }
-        if (ordenServicio.getTecnicosAsignados() != null) {
-            for (ObjectId idItem : ordenServicio.getTecnicosAsignados()) {
-                if (usuarioService.buscarUsuariosPorId(idItem) == null) {
-                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario con ID " + idItem + " no existe o es nulo.");
-                }
-            }
-        }
-        ObjectId citaId = ordenServicio.getCitaId();
-        if (citaId != null && citaService.buscarCitasPorId(citaId) == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "La cita con ID " + citaId + " no existe o es nulo.");
-        }
-        
+        validarOrden(ordenServicio);
         return ordenServicioRepository.save(ordenServicio);
     }
 
@@ -100,35 +99,13 @@ public class OrdenServiciosServiceImp implements IOrdenServicioService {
         Optional<OrdenServicioModel> existente = ordenServicioRepository.findById(idOrdenServicio);
         return existente.orElse(null);
     }
-    
+
     @Override
     public OrdenServicioModel actualizarOrdenServicio(ObjectId idOrdenServicio, OrdenServicioModel ordenServicio) {
         if (buscarOrdenesServicioPorId(idOrdenServicio) == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe un registro con ID " + idOrdenServicio + " en ordenesServicio.");
         }
-        ObjectId bicicletaId = ordenServicio.getBicicletaId();
-        if (bicicletaService.buscarBicicletasPorId(bicicletaId) == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "La bicicleta con ID " + bicicletaId + " no existe o es nulo.");
-        }
-        ObjectId usuarioId = ordenServicio.getUsuarioId();
-        if (usuarioService.buscarUsuariosPorId(usuarioId) == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario con ID " + usuarioId + " no existe o es nulo.");
-        }
-        ObjectId coordinadorResponsable = ordenServicio.getCoordinadorResponsable();
-        if (usuarioService.buscarUsuariosPorId(coordinadorResponsable) == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El coordinador con ID " + coordinadorResponsable + " no existe o es nulo.");
-        }
-        if (ordenServicio.getTecnicosAsignados() != null) {
-            for (ObjectId idItem : ordenServicio.getTecnicosAsignados()) {
-                if (usuarioService.buscarUsuariosPorId(idItem) == null) {
-                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario con ID " + idItem + " no existe o es nulo.");
-                }
-            }
-        }
-        ObjectId citaId = ordenServicio.getCitaId();
-        if (citaId != null && citaService.buscarCitasPorId(citaId) == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "La cita con ID " + citaId + " no existe o es nulo.");
-        }
+        validarOrden(ordenServicio);
         ordenServicio.setId(idOrdenServicio);
         return ordenServicioRepository.save(ordenServicio);
     }
@@ -140,5 +117,4 @@ public class OrdenServiciosServiceImp implements IOrdenServicioService {
         }
         ordenServicioRepository.deleteById(idOrdenServicio);
     }
-
 }

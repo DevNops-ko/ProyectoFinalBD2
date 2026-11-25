@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+/** Validaciones reutilizables de valores que en MongoDB son "enum". */
 public final class Validaciones {
 
     private Validaciones() {

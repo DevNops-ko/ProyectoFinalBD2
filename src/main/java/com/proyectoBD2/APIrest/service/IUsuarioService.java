@@ -13,5 +13,6 @@ public interface IUsuarioService {
     UsuarioModel actualizarUsuario(ObjectId idUsuario, UsuarioModel usuario);
     void eliminarUsuario(ObjectId idUsuario);
 
+
     UsuarioModel validarRol(ObjectId usuarioId, String rolEsperado);
 }
