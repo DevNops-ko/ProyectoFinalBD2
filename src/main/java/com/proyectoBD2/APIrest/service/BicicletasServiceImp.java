@@ -39,4 +39,25 @@ public class BicicletasServiceImp implements IBicicletasService {
         Optional<BicicletasModel> existente = bicicletaRepository.findById(bicicletaId);
         return existente.orElse(null);
     }
+
+    @Override
+    public BicicletasModel actualizarBicicleta(ObjectId bicicletaId, BicicletasModel bicicleta) {
+        if (buscarBicicletasPorId(bicicletaId) == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe un registro con ID " + bicicletaId + " en bicicletas.");
+        }
+        ObjectId usuarioId = bicicleta.getUsuarioId();
+        if (usuarioId == null || usuarioService.buscarUsuariosPorId(usuarioId) == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El usuario con ID " + usuarioId + " no existe o es nulo.");
+        }
+        bicicleta.setId(bicicletaId);
+        return bicicletaRepository.save(bicicleta);
+    }
+
+    @Override
+    public void eliminarBicicleta(ObjectId bicicletaId) {
+        if (buscarBicicletasPorId(bicicletaId) == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe un registro con ID " + bicicletaId + " en bicicletas.");
+        }
+        bicicletaRepository.deleteById(bicicletaId);
+    }
 }

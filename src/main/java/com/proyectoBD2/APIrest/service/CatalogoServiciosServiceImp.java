@@ -5,7 +5,9 @@ import java.util.Optional;
 
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.proyectoBD2.APIrest.model.CatalogoServiciosModel;
 import com.proyectoBD2.APIrest.repository.ICatalogoServiciosRepository;
@@ -32,4 +34,22 @@ public class CatalogoServiciosServiceImp implements ICatalogoServiciosService {
         Optional<CatalogoServiciosModel> existente = catalogoServiciosRepository.findById(idServicio);
         return existente.orElse(null);
     }
+    
+    @Override
+    public CatalogoServiciosModel actualizarServicio(ObjectId idServicio, CatalogoServiciosModel servicio) {
+        if (buscarServiciosPorId(idServicio) == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe un registro con ID " + idServicio + " en catalogoServicios.");
+        }
+        servicio.setId(idServicio);
+        return catalogoServiciosRepository.save(servicio);
+    }
+
+    @Override
+    public void eliminarServicio(ObjectId idServicio) {
+        if (buscarServiciosPorId(idServicio) == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe un registro con ID " + idServicio + " en catalogoServicios.");
+        }
+        catalogoServiciosRepository.deleteById(idServicio);
+    }
+
 }

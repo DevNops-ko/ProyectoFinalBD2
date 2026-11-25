@@ -10,4 +10,6 @@ public interface ICatalogoServiciosService {
     CatalogoServiciosModel crearServicio(CatalogoServiciosModel servicio);
     List<CatalogoServiciosModel> listarServicios();
     CatalogoServiciosModel buscarServiciosPorId(ObjectId idServicio);
+    CatalogoServiciosModel actualizarServicio(ObjectId idServicio, CatalogoServiciosModel servicio);
+    void eliminarServicio(ObjectId idServicio);
 }
