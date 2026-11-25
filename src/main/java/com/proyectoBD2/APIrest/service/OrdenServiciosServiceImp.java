@@ -23,7 +23,7 @@ public class OrdenServiciosServiceImp implements IOrdenServicioService {
     @Autowired IUsuarioService usuarioService;
     @Autowired ICitasService citaService;
 
-    private void validarOrden(OrdenServicioModel ordenServicio) {
+    public void validarOrden(OrdenServicioModel ordenServicio) {
         ObjectId bicicletaId = ordenServicio.getBicicletaId();
         if (bicicletaService.buscarBicicletasPorId(bicicletaId) == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "La bicicleta con ID " + bicicletaId + " no existe o es nulo.");
