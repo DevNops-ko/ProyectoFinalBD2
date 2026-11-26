@@ -34,12 +34,10 @@ public class EstadisticasServiceImp implements IEstadisticasService {
     @Autowired MongoTemplate mongoTemplate;
     @Autowired IUsuarioService usuarioService;
 
-    /** Solo un usuario con rol coordinador puede consultar las estadisticas. */
     private void validarCoordinador(ObjectId coordinadorId) {
         usuarioService.validarRol(coordinadorId, Constantes.ROL_COORDINADOR);
     }
 
-    /** Nombre real de la coleccion segun el @Document del modelo (ordenServicio, trabajos). */
     private String coleccion(Class<?> modelo) {
         return mongoTemplate.getCollectionName(modelo);
     }
@@ -48,7 +46,6 @@ public class EstadisticasServiceImp implements IEstadisticasService {
         return Math.round(valor * 100.0) / 100.0;
     }
 
-    // 1. Servicios mas solicitados: cuenta los trabajos por servicio del catalogo.
     @Override
     public List<Document> serviciosMasSolicitados(ObjectId coordinadorId) {
         if (coordinadorId != null) {
@@ -102,7 +99,6 @@ public class EstadisticasServiceImp implements IEstadisticasService {
         return resultado;
     }
 
-    // 3. Tiempos de atencion: horas entre fechaRecepcion y entrega.fecha de las ordenes entregadas.
     @Override
     public Document tiemposAtencion(ObjectId coordinadorId) {
         if (coordinadorId != null) {
@@ -111,20 +107,16 @@ public class EstadisticasServiceImp implements IEstadisticasService {
 
         String ordenes = coleccion(OrdenServicioModel.class);
 
-        // total de ordenes entregadas, incluidas las que no se pueden medir
         long totalEntregadas = mongoTemplate.count(
                 new Query(Criteria.where("estado").is(Constantes.ESTADO_ENTREGADO)), ordenes);
 
         Aggregation agg = newAggregation(
-                // 1. solo ordenes entregadas que tengan fecha de entrega y de recepcion
                 match(new Criteria().andOperator(
                         Criteria.where("estado").is(Constantes.ESTADO_ENTREGADO),
                         Criteria.where("entrega.fecha").ne(null),
                         Criteria.where("fechaRecepcion").ne(null))),
-                // 2. dejamos las fechas como campos de primer nivel
                 project("fechaRecepcion", "fechaEstimadaEntrega")
                         .and("entrega.fecha").as("fechaEntrega"),
-                // 3. horas de atencion de cada orden y si se entrego a tiempo (1 o 0)
                 project()
                         .and(ArithmeticOperators.Divide.valueOf(
                                 ArithmeticOperators.Subtract.valueOf("fechaEntrega").subtract("fechaRecepcion"))
@@ -132,7 +124,6 @@ public class EstadisticasServiceImp implements IEstadisticasService {
                         .and(ConditionalOperators.when(
                                 ComparisonOperators.valueOf("fechaEntrega").lessThanEqualTo("fechaEstimadaEntrega"))
                                 .then(1).otherwise(0)).as("aTiempo"),
-                // 4. estadisticas de todas las ordenes juntas
                 group()
                         .avg("horas").as("promedio")
                         .min("horas").as("minimo")
@@ -164,7 +155,6 @@ public class EstadisticasServiceImp implements IEstadisticasService {
         return resultado;
     }
 
-    // 4. Valoraciones recibidas: promedio, minima, maxima y cantidad por calificacion.
     @Override
     public Document valoracionesRecibidas(ObjectId coordinadorId) {
         if (coordinadorId != null) {
