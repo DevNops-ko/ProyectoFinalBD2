@@ -20,22 +20,23 @@ public class EstadisticasController {
     @Autowired IEstadisticasService estadisticasService;
 
     @GetMapping("/serviciosMasSolicitados")
-    public ResponseEntity<List<Document>> serviciosMasSolicitados(@RequestParam ObjectId coordinadorId){
+    public ResponseEntity<List<Document>> serviciosMasSolicitados(@RequestParam(required = false) ObjectId coordinadorId){
         return new ResponseEntity<List<Document>>(estadisticasService.serviciosMasSolicitados(coordinadorId), HttpStatus.OK);
     }
 
     @GetMapping("/ordenesPorEstado")
-    public ResponseEntity<List<Document>> ordenesPorEstado(@RequestParam ObjectId coordinadorId){
+    public ResponseEntity<List<Document>> ordenesPorEstado(@RequestParam(required = false) ObjectId coordinadorId){
         return new ResponseEntity<List<Document>>(estadisticasService.ordenesPorEstado(coordinadorId), HttpStatus.OK);
     }
 
     @GetMapping("/tiemposAtencion")
-    public ResponseEntity<Document> tiemposAtencion(@RequestParam ObjectId coordinadorId){
+    public ResponseEntity<Document> tiemposAtencion(@RequestParam(required = false) ObjectId coordinadorId){
         return new ResponseEntity<Document>(estadisticasService.tiemposAtencion(coordinadorId), HttpStatus.OK);
     }
 
     @GetMapping("/valoraciones")
-    public ResponseEntity<Document> valoracionesRecibidas(@RequestParam ObjectId coordinadorId){
+    public ResponseEntity<Document> valoracionesRecibidas(@RequestParam(required = false) ObjectId coordinadorId){
         return new ResponseEntity<Document>(estadisticasService.valoracionesRecibidas(coordinadorId), HttpStatus.OK);
     }
 }
+//http://localhost:8080/UAO/apirest/estadisticas/serviciosMasSolicitados?coordinadorId=ID_DEL_COORDINADOR
