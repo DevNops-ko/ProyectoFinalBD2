@@ -11,6 +11,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.proyectoBD2.APIrest.model.UsuarioModel;
 import com.proyectoBD2.APIrest.repository.IUsuarioRepository;
+import com.proyectoBD2.APIrest.util.Constantes;
+import com.proyectoBD2.APIrest.util.Validaciones;
 
 @Service
 public class UsuarioServiceImp implements IUsuarioService {
@@ -19,6 +21,7 @@ public class UsuarioServiceImp implements IUsuarioService {
 
     @Override
     public UsuarioModel crearUsuario(UsuarioModel usuario) {
+        Validaciones.validarEnum("rol", usuario.getRol(), Constantes.ROLES);
         return usuarioRepository.save(usuario);
     }
 
@@ -41,6 +44,7 @@ public class UsuarioServiceImp implements IUsuarioService {
         if (usuarioId == null || !usuarioRepository.existsById(usuarioId)) {
             return null;
         }
+        Validaciones.validarEnum("rol", usuarioActualizado.getRol(), Constantes.ROLES);
         usuarioActualizado.setId(usuarioId);
         return usuarioRepository.save(usuarioActualizado);
     }

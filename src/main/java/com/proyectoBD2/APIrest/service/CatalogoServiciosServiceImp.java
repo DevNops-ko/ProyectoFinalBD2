@@ -11,6 +11,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.proyectoBD2.APIrest.model.CatalogoServiciosModel;
 import com.proyectoBD2.APIrest.repository.ICatalogoServiciosRepository;
+import com.proyectoBD2.APIrest.util.Constantes;
+import com.proyectoBD2.APIrest.util.Validaciones;
 
 @Service
 public class CatalogoServiciosServiceImp implements ICatalogoServiciosService {
@@ -18,6 +20,7 @@ public class CatalogoServiciosServiceImp implements ICatalogoServiciosService {
 
     @Override
     public CatalogoServiciosModel crearServicio(CatalogoServiciosModel servicio) {
+        Validaciones.validarEnum("categoria", servicio.getCategoria(), Constantes.CATEGORIAS_SERVICIO);
         return catalogoServiciosRepository.save(servicio);
     }
 
@@ -40,6 +43,7 @@ public class CatalogoServiciosServiceImp implements ICatalogoServiciosService {
         if (buscarServiciosPorId(idServicio) == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe un registro con ID " + idServicio + " en catalogoServicios.");
         }
+        Validaciones.validarEnum("categoria", servicio.getCategoria(), Constantes.CATEGORIAS_SERVICIO);
         servicio.setId(idServicio);
         return catalogoServiciosRepository.save(servicio);
     }
