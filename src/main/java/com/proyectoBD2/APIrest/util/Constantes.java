@@ -11,6 +11,10 @@ public final class Constantes {
     public static final String ROL_CLIENTE = "cliente";
     public static final String ROL_TECNICO = "tecnico";
     public static final String ROL_COORDINADOR = "coordinador";
+    public static final List<String> ROLES = List.of("cliente", "tecnico", "coordinador");
+
+    public static final List<String> CATEGORIAS_SERVICIO = List.of("Mantenimiento Preventivo", "Frenos",
+            "Transmision", "Ruedas", "Suspension", "Componentes Electricos");
 
     public static final String DECISION_PENDIENTE = "Pendiente";
     public static final String DECISION_AUTORIZADO = "Autorizado";
