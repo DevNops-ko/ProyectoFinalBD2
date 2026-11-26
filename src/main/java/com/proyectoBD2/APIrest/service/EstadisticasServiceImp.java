@@ -1,15 +1,29 @@
 package com.proyectoBD2.APIrest.service;
 
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.group;
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.match;
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.newAggregation;
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.project;
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.sort;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.ArithmeticOperators;
+import org.springframework.data.mongodb.core.aggregation.ComparisonOperators;
+import org.springframework.data.mongodb.core.aggregation.ConditionalOperators;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
-import com.proyectoBD2.APIrest.model.CatalogoServiciosModel;
 import com.proyectoBD2.APIrest.model.OrdenServicioModel;
 import com.proyectoBD2.APIrest.model.TrabajosModel;
 import com.proyectoBD2.APIrest.util.Constantes;
@@ -20,67 +34,176 @@ public class EstadisticasServiceImp implements IEstadisticasService {
     @Autowired MongoTemplate mongoTemplate;
     @Autowired IUsuarioService usuarioService;
 
-    private List<Document> agregar(Class<?> modelo, List<Document> pipeline) {
-        return mongoTemplate.getCollection(mongoTemplate.getCollectionName(modelo))
-                .aggregate(pipeline).into(new ArrayList<>());
-    }
-
+    /** Solo un usuario con rol coordinador puede consultar las estadisticas. */
     private void validarCoordinador(ObjectId coordinadorId) {
         usuarioService.validarRol(coordinadorId, Constantes.ROL_COORDINADOR);
     }
 
+    /** Nombre real de la coleccion segun el @Document del modelo (ordenServicio, trabajos). */
+    private String coleccion(Class<?> modelo) {
+        return mongoTemplate.getCollectionName(modelo);
+    }
+
+    private double redondear(double valor) {
+        return Math.round(valor * 100.0) / 100.0;
+    }
+
+    // 1. Servicios mas solicitados: cuenta los trabajos por servicio del catalogo.
     @Override
     public List<Document> serviciosMasSolicitados(ObjectId coordinadorId) {
-        validarCoordinador(coordinadorId);
-        String catalogo = mongoTemplate.getCollectionName(CatalogoServiciosModel.class);
-        return agregar(TrabajosModel.class, List.of(
-            Document.parse("{ $match: { 'servicio.servicioId': { $exists: true } } }"),
-            Document.parse("{ $group: { _id: '$servicio.servicioId', vecesSolicitado: { $sum: 1 },"
-                + " nombreEnOrden: { $first: '$servicio.nombre' } } }"),
-            Document.parse("{ $lookup: { from: '" + catalogo + "', localField: '_id', foreignField: '_id', as: 'catalogo' } }"),
-            Document.parse("{ $project: { _id: 0, servicioId: { $toString: '$_id' },"
-                + " nombre: { $ifNull: [ { $first: '$catalogo.nombre' }, '$nombreEnOrden' ] },"
-                + " categoria: { $first: '$catalogo.categoria' }, vecesSolicitado: 1 } }"),
-            Document.parse("{ $sort: { vecesSolicitado: -1 } }")));
+        if (coordinadorId != null) {
+            validarCoordinador(coordinadorId);
+        }
+
+        Aggregation agg = newAggregation(
+                match(Criteria.where("servicio.servicioId").ne(null)),
+                group("servicio.servicioId")
+                        .first("servicio.nombre").as("nombre")
+                        .count().as("totalSolicitudes"),
+                sort(Sort.Direction.DESC, "totalSolicitudes"));
+
+        List<Document> docs = mongoTemplate
+                .aggregate(agg, coleccion(TrabajosModel.class), Document.class)
+                .getMappedResults();
+
+        List<Document> resultado = new ArrayList<>();
+        for (Document d : docs) {
+            Document fila = new Document();
+            fila.put("servicioId", String.valueOf(d.get("_id")));
+            fila.put("nombre", d.get("nombre"));
+            fila.put("totalSolicitudes", ((Number) d.get("totalSolicitudes")).intValue());
+            resultado.add(fila);
+        }
+        return resultado;
     }
 
+    // 2. Ordenes agrupadas por estado.
     @Override
     public List<Document> ordenesPorEstado(ObjectId coordinadorId) {
-        validarCoordinador(coordinadorId);
-        return agregar(OrdenServicioModel.class, List.of(
-            Document.parse("{ $group: { _id: '$estado', total: { $sum: 1 } } }"),
-            Document.parse("{ $project: { _id: 0, estado: '$_id', total: 1 } }"),
-            Document.parse("{ $sort: { total: -1 } }")));
+        if (coordinadorId != null) {
+            validarCoordinador(coordinadorId);
+        }
+
+        Aggregation agg = newAggregation(
+                group("estado").count().as("total"),
+                sort(Sort.Direction.DESC, "total"));
+
+        List<Document> docs = mongoTemplate
+                .aggregate(agg, coleccion(OrdenServicioModel.class), Document.class)
+                .getMappedResults();
+
+        List<Document> resultado = new ArrayList<>();
+        for (Document d : docs) {
+            Document fila = new Document();
+            fila.put("estado", d.get("_id"));
+            fila.put("total", ((Number) d.get("total")).intValue());
+            resultado.add(fila);
+        }
+        return resultado;
     }
 
+    // 3. Tiempos de atencion: horas entre fechaRecepcion y entrega.fecha de las ordenes entregadas.
     @Override
     public Document tiemposAtencion(ObjectId coordinadorId) {
-        validarCoordinador(coordinadorId);
-        List<Document> resultado = agregar(OrdenServicioModel.class, List.of(
-            Document.parse("{ $match: { 'entrega.fecha': { $exists: true }, fechaRecepcion: { $exists: true } } }"),
-            Document.parse("{ $project: {"
-                + " dias: { $divide: [ { $subtract: ['$entrega.fecha', '$fechaRecepcion'] }, 86400000 ] },"
-                + " aTiempo: { $cond: [ { $lte: ['$entrega.fecha', '$fechaEstimadaEntrega'] }, 1, 0 ] } } }"),
-            Document.parse("{ $group: { _id: null, ordenesEntregadas: { $sum: 1 }, promedioDias: { $avg: '$dias' },"
-                + " minimoDias: { $min: '$dias' }, maximoDias: { $max: '$dias' }, entregadasATiempo: { $sum: '$aTiempo' } } }"),
-            Document.parse("{ $project: { _id: 0, ordenesEntregadas: 1, entregadasATiempo: 1,"
-                + " promedioDias: { $round: ['$promedioDias', 2] }, minimoDias: { $round: ['$minimoDias', 2] },"
-                + " maximoDias: { $round: ['$maximoDias', 2] } } }")));
-        return resultado.isEmpty() ? new Document("ordenesEntregadas", 0) : resultado.get(0);
+        if (coordinadorId != null) {
+            validarCoordinador(coordinadorId);
+        }
+
+        String ordenes = coleccion(OrdenServicioModel.class);
+
+        // total de ordenes entregadas, incluidas las que no se pueden medir
+        long totalEntregadas = mongoTemplate.count(
+                new Query(Criteria.where("estado").is(Constantes.ESTADO_ENTREGADO)), ordenes);
+
+        Aggregation agg = newAggregation(
+                // 1. solo ordenes entregadas que tengan fecha de entrega y de recepcion
+                match(new Criteria().andOperator(
+                        Criteria.where("estado").is(Constantes.ESTADO_ENTREGADO),
+                        Criteria.where("entrega.fecha").ne(null),
+                        Criteria.where("fechaRecepcion").ne(null))),
+                // 2. dejamos las fechas como campos de primer nivel
+                project("fechaRecepcion", "fechaEstimadaEntrega")
+                        .and("entrega.fecha").as("fechaEntrega"),
+                // 3. horas de atencion de cada orden y si se entrego a tiempo (1 o 0)
+                project()
+                        .and(ArithmeticOperators.Divide.valueOf(
+                                ArithmeticOperators.Subtract.valueOf("fechaEntrega").subtract("fechaRecepcion"))
+                                .divideBy(3_600_000)).as("horas")
+                        .and(ConditionalOperators.when(
+                                ComparisonOperators.valueOf("fechaEntrega").lessThanEqualTo("fechaEstimadaEntrega"))
+                                .then(1).otherwise(0)).as("aTiempo"),
+                // 4. estadisticas de todas las ordenes juntas
+                group()
+                        .avg("horas").as("promedio")
+                        .min("horas").as("minimo")
+                        .max("horas").as("maximo")
+                        .sum("aTiempo").as("entregadasATiempo")
+                        .count().as("ordenesMedidas"));
+
+        List<Document> r = mongoTemplate.aggregate(agg, ordenes, Document.class).getMappedResults();
+
+        Document resultado = new Document();
+        int medidas = r.isEmpty() ? 0 : ((Number) r.get(0).get("ordenesMedidas")).intValue();
+        resultado.put("ordenesEntregadas", totalEntregadas);
+        resultado.put("ordenesMedidas", medidas);
+        resultado.put("ordenesSinDatos", totalEntregadas - medidas);
+
+        if (r.isEmpty()) {
+            resultado.put("entregadasATiempo", 0);
+            resultado.put("promedioHoras", null);
+            resultado.put("minimoHoras", null);
+            resultado.put("maximoHoras", null);
+            return resultado;
+        }
+
+        Document d = r.get(0);
+        resultado.put("entregadasATiempo", ((Number) d.get("entregadasATiempo")).intValue());
+        resultado.put("promedioHoras", redondear(((Number) d.get("promedio")).doubleValue()));
+        resultado.put("minimoHoras", redondear(((Number) d.get("minimo")).doubleValue()));
+        resultado.put("maximoHoras", redondear(((Number) d.get("maximo")).doubleValue()));
+        return resultado;
     }
 
+    // 4. Valoraciones recibidas: promedio, minima, maxima y cantidad por calificacion.
     @Override
     public Document valoracionesRecibidas(ObjectId coordinadorId) {
-        validarCoordinador(coordinadorId);
-        List<Document> resultado = agregar(OrdenServicioModel.class, List.of(
-            Document.parse("{ $match: { 'valoracion.calificacion': { $exists: true } } }"),
-            Document.parse("{ $group: { _id: '$valoracion.calificacion', cantidad: { $sum: 1 } } }"),
-            Document.parse("{ $sort: { _id: -1 } }"),
-            Document.parse("{ $group: { _id: null, totalValoraciones: { $sum: '$cantidad' },"
-                + " sumaCalificaciones: { $sum: { $multiply: ['$_id', '$cantidad'] } },"
-                + " distribucion: { $push: { calificacion: '$_id', cantidad: '$cantidad' } } } }"),
-            Document.parse("{ $project: { _id: 0, totalValoraciones: 1, distribucion: 1,"
-                + " promedio: { $round: [ { $divide: ['$sumaCalificaciones', '$totalValoraciones'] }, 2 ] } } }")));
-        return resultado.isEmpty() ? new Document("totalValoraciones", 0) : resultado.get(0);
+        if (coordinadorId != null) {
+            validarCoordinador(coordinadorId);
+        }
+
+        String ordenes = coleccion(OrdenServicioModel.class);
+        Criteria conValoracion = Criteria.where("valoracion.calificacion").ne(null);
+
+        Aggregation resumen = newAggregation(
+                match(conValoracion),
+                group().avg("valoracion.calificacion").as("promedio")
+                        .min("valoracion.calificacion").as("minima")
+                        .max("valoracion.calificacion").as("maxima")
+                        .count().as("total"));
+        List<Document> r = mongoTemplate.aggregate(resumen, ordenes, Document.class).getMappedResults();
+
+        Aggregation porNota = newAggregation(
+                match(conValoracion),
+                group("valoracion.calificacion").count().as("cantidad"));
+        List<Document> n = mongoTemplate.aggregate(porNota, ordenes, Document.class).getMappedResults();
+
+        Map<Integer, Integer> distribucion = new TreeMap<>(); // TreeMap las deja ordenadas por nota
+        for (Document d : n) {
+            distribucion.put(((Number) d.get("_id")).intValue(), ((Number) d.get("cantidad")).intValue());
+        }
+
+        Document resultado = new Document();
+        if (r.isEmpty()) {
+            resultado.put("totalValoraciones", 0);
+            resultado.put("promedio", null);
+        } else {
+            Document d = r.get(0);
+            resultado.put("totalValoraciones", ((Number) d.get("total")).intValue());
+            resultado.put("promedio", redondear(((Number) d.get("promedio")).doubleValue()));
+            resultado.put("minima", d.get("minima"));
+            resultado.put("maxima", d.get("maxima"));
+        }
+        resultado.put("distribucionPorCalificacion", distribucion);
+        return resultado;
     }
 }
