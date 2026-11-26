@@ -1,5 +1,6 @@
 package com.proyectoBD2.APIrest.service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,7 +11,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.proyectoBD2.APIrest.model.AutorizacionModel;
+import com.proyectoBD2.APIrest.model.CatalogoServiciosModel;
 import com.proyectoBD2.APIrest.model.OrdenServicioModel;
+import com.proyectoBD2.APIrest.model.RepuestosModel;
 import com.proyectoBD2.APIrest.model.RepuestosPrevistosModel;
 import com.proyectoBD2.APIrest.model.RepuestosUsadosModel;
 import com.proyectoBD2.APIrest.model.TrabajosModel;
@@ -27,8 +30,7 @@ public class TrabajosServiceImp implements ITrabajosService {
     @Autowired ICatalogoServiciosService catalogoServiciosService;
     @Autowired IRepuestosService repuestosService;
 
-
-    private void validarTrabajo(TrabajosModel trabajo) {
+    private void validarTrabajo(TrabajosModel trabajo, TrabajosModel existente) {
         ObjectId ordenServicioId = trabajo.getOrdenServicioId();
         OrdenServicioModel orden = ordenServicioService.buscarOrdenesServicioPorId(ordenServicioId);
         if (orden == null) {
@@ -44,16 +46,30 @@ public class TrabajosServiceImp implements ITrabajosService {
 
         if (trabajo.getServicio() != null) {
             ObjectId servicioId = trabajo.getServicio().getServicioId();
-            if (catalogoServiciosService.buscarServiciosPorId(servicioId) == null) {
+            CatalogoServiciosModel servicioCatalogo = catalogoServiciosService.buscarServiciosPorId(servicioId);
+            if (servicioCatalogo == null) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El servicio con ID " + servicioId + " no existe en el catalogo.");
+            }
+            if (trabajo.getServicio().getNombre() == null) {
+                trabajo.getServicio().setNombre(servicioCatalogo.getNombre());
             }
         }
 
         if (trabajo.getRepuestosPrevistos() != null) {
             for (RepuestosPrevistosModel repuestoPrevisto : trabajo.getRepuestosPrevistos()) {
                 ObjectId repuestoId = repuestoPrevisto.getRepuestoId();
-                if (repuestosService.buscarRepuestosPorId(repuestoId) == null) {
+                RepuestosModel repuesto = repuestosService.buscarRepuestosPorId(repuestoId);
+                if (repuesto == null) {
                     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El repuesto con ID " + repuestoId + " no existe.");
+                }
+                if (repuestoPrevisto.getNombre() == null) {
+                    repuestoPrevisto.setNombre(repuesto.getNombre());
+                }
+                if (repuestoPrevisto.getEspecificaciones() == null) {
+                    repuestoPrevisto.setEspecificaciones(repuesto.getEspecificaciones());
+                }
+                if (repuestoPrevisto.getPrecioUnitario() == null) {
+                    repuestoPrevisto.setPrecioUnitario(repuesto.getPrecio());
                 }
             }
         }
@@ -70,12 +86,27 @@ public class TrabajosServiceImp implements ITrabajosService {
         if (trabajo.getAutorizacion() == null) {
             trabajo.setAutorizacion(new AutorizacionModel(Constantes.DECISION_PENDIENTE, null, null));
         }
-        Validaciones.validarEnum("autorizacion.decision", trabajo.getAutorizacion().getDecision(), Constantes.DECISIONES_TRABAJO);
+        AutorizacionModel autorizacion = trabajo.getAutorizacion();
+        Validaciones.validarEnum("autorizacion.decision", autorizacion.getDecision(), Constantes.DECISIONES_TRABAJO);
+
+        if (existente == null && !Constantes.DECISION_PENDIENTE.equals(autorizacion.getDecision())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Un trabajo nuevo debe registrarse con autorizacion.decision = 'Pendiente'; el cliente decide despues.");
+        }
+
+        if (!Constantes.DECISION_PENDIENTE.equals(autorizacion.getDecision()) && autorizacion.getFecha() == null) {
+            autorizacion.setFecha(new Date());
+        }
+
+        if (trabajo.getEjecucion() != null && !Constantes.DECISION_AUTORIZADO.equals(autorizacion.getDecision())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Solo los trabajos con autorizacion.decision = 'Autorizado' pueden registrar ejecucion.");
+        }
     }
 
     @Override
     public TrabajosModel crearTrabajo(TrabajosModel trabajo) {
-        validarTrabajo(trabajo);
+        validarTrabajo(trabajo, null);
         return trabajoRepository.save(trabajo);
     }
 
@@ -95,18 +126,28 @@ public class TrabajosServiceImp implements ITrabajosService {
 
     @Override
     public TrabajosModel actualizarTrabajo(ObjectId idTrabajo, TrabajosModel trabajo) {
-        if (buscarTrabajosPorId(idTrabajo) == null) {
+        TrabajosModel existente = buscarTrabajosPorId(idTrabajo);
+        if (existente == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe un registro con ID " + idTrabajo + " en trabajos.");
         }
-        validarTrabajo(trabajo);
+        validarTrabajo(trabajo, existente);
         trabajo.setId(idTrabajo);
         return trabajoRepository.save(trabajo);
     }
 
     @Override
     public void eliminarTrabajo(ObjectId idTrabajo) {
-        if (buscarTrabajosPorId(idTrabajo) == null) {
+        TrabajosModel existente = buscarTrabajosPorId(idTrabajo);
+        if (existente == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe un registro con ID " + idTrabajo + " en trabajos.");
+        }
+        // Enunciado: los trabajos rechazados "permaneceran en la orden como parte del historial".
+        // Solo se puede borrar un trabajo que el cliente aun no ha decidido.
+        if (existente.getAutorizacion() != null
+                && !Constantes.DECISION_PENDIENTE.equals(existente.getAutorizacion().getDecision())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "No se puede eliminar un trabajo con decision '" + existente.getAutorizacion().getDecision()
+                            + "': forma parte del historial de la orden.");
         }
         trabajoRepository.deleteById(idTrabajo);
     }

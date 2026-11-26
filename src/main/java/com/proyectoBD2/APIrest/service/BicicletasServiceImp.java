@@ -24,6 +24,16 @@ public class BicicletasServiceImp implements IBicicletasService {
     private void validarBicicleta(BicicletasModel bicicleta) {
         usuarioService.validarRol(bicicleta.getUsuarioId(), Constantes.ROL_CLIENTE);
         bicicleta.setTipo(Validaciones.normalizarTipoBicicleta(bicicleta.getTipo()));
+
+        String tipo = bicicleta.getTipo();
+        if (!Constantes.TIPO_MONTANA.equals(tipo) && (bicicleta.getSuspension() != null || bicicleta.getRecorrido() != null)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Los campos 'suspension' y 'recorrido' solo aplican a bicicletas de tipo '" + Constantes.TIPO_MONTANA + "'.");
+        }
+        if (!Constantes.TIPO_ELECTRICA.equals(tipo) && (bicicleta.getBateria() != null || bicicleta.getMotor() != null)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Los campos 'bateria' y 'motor' solo aplican a bicicletas de tipo '" + Constantes.TIPO_ELECTRICA + "'.");
+        }
     }
 
     @Override

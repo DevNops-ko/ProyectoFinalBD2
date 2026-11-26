@@ -1,6 +1,7 @@
 package com.proyectoBD2.APIrest.controller;
 
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -8,6 +9,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class ManejadorErrores {
+
+    @ExceptionHandler(DuplicateKeyException.class)
+    public ResponseEntity<String> manejarDuplicado(DuplicateKeyException e) {
+        return new ResponseEntity<String>(
+            "MongoDB rechazo el documento por un indice unico: " + e.getMostSpecificCause().getMessage(), HttpStatus.CONFLICT);
+    }
 
     @ExceptionHandler(DataAccessException.class)
     public ResponseEntity<String> manejarErrorDeMongo(DataAccessException e) {
