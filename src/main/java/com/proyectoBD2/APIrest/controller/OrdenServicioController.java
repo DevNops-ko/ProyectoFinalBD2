@@ -2,6 +2,7 @@ package com.proyectoBD2.APIrest.controller;
 
 import java.util.List;
 
+import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -41,6 +42,21 @@ public class OrdenServicioController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe un registro con ID " + ordenServicioId + " en ordenesServicio.");
         }
         return new ResponseEntity<OrdenServicioModel>(ordenServicio, HttpStatus.OK);
+    }
+
+    @GetMapping("/bicicleta/{bicicletaId}")
+    public ResponseEntity<List<OrdenServicioModel>> listarOrdenesPorBicicleta(@PathVariable ObjectId bicicletaId){
+        return new ResponseEntity<List<OrdenServicioModel>>(ordenServicioService.listarOrdenesPorBicicleta(bicicletaId), HttpStatus.OK);
+    }
+
+    @GetMapping("/cliente/{usuarioId}")
+    public ResponseEntity<List<OrdenServicioModel>> listarOrdenesPorCliente(@PathVariable ObjectId usuarioId){
+        return new ResponseEntity<List<OrdenServicioModel>>(ordenServicioService.listarOrdenesPorCliente(usuarioId), HttpStatus.OK);
+    }
+
+    @GetMapping("/{ordenServicioId}/valorEstimado")
+    public ResponseEntity<Document> calcularValorEstimado(@PathVariable ObjectId ordenServicioId){
+        return new ResponseEntity<Document>(ordenServicioService.calcularValorEstimado(ordenServicioId), HttpStatus.OK);
     }
 
     @PutMapping("/{ordenServicioId}")
